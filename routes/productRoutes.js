@@ -1,20 +1,21 @@
 // routes/productRoutes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
-const {
-  createProduct,
-  getAllProducts,
-  getProductById,
-  updateProduct,
-  deleteProduct
-} = require('../controllers/productController');
+const authMiddleware = require("../middleware/auth");
+const productController = require("../controllers/productController"); // ✅ Import correctly
 
-// Protected routes - only accessible with valid JWT token
-router.post('/', authMiddleware, createProduct);
-router.get('/', getAllProducts);
-router.get('/:id', getProductById);
-router.put('/:id', authMiddleware, updateProduct);
-router.delete('/:id', authMiddleware, deleteProduct);
+const multer = require("multer");
+
+// 🔹 Configure Multer for multiple file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage }).array("images", 6); // ✅ Correct usage
+
+// 🔹 Route for product upload with multiple images
+router.post("/upload", upload, productController.uploadProduct);
+
+router.get("/", productController.getAllProducts);
+router.get("/:id", productController.getProductById);
+router.put("/:id", authMiddleware, productController.updateProduct);
+router.delete("/:id", authMiddleware, productController.deleteProduct);
 
 module.exports = router;

@@ -1,25 +1,35 @@
-// models/Product.js
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const productSchema = new Schema({
-  name: {
-    type: String,
-    required: [true, 'Product name is required']
+const ProductSchema = new mongoose.Schema({
+  title: String,
+  sku: String,
+  price: Number,
+  originalPrice: Number,
+  discount: String,
+  sizes: [String],
+  description: String,
+  extraDetails: String,
+  storeInfo: String,
+  additionalInfo: {
+    brand: String,
+    manufacturer: String,
+    address: String,
+    customerSupport: String,
+    productWeight: String,
+    packageDimensions: String,
+    countryOfOrigin: String,
   },
-  description: {
-    type: String
+  shippingInfo: {
+    freeShipping: Boolean,
+    estimatedDelivery: String,
   },
-  price: {
-    type: Number,
-    required: [true, 'Price is required']
+  specifications: {
+    color: String,
+    fabric: String,
+    embroidery: String,
+    packContents: String,
   },
-  category: {
-    type: String
-  },
-  image: {
-    type: String  // Could store an image URL or path to an uploaded file
-  }
-}, { timestamps: true });
+  imageUrls: [String], // Array to store up to 6 image URLs
+});
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model("Product", ProductSchema);

@@ -3,13 +3,13 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
-
+const cors = require('cors');
 // Import routes
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 
 const app = express();
-
+app.use(cors());
 // Connect to MongoDB
 connectDB();
 

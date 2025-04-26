@@ -13,9 +13,9 @@ const upload = multer({ storage }).array("images", 6); // ✅ Correct usage
 // 🔹 Route for product upload with multiple images
 router.post("/upload", upload, productController.uploadProduct);
 
-router.get("/", productController.getAllProducts);
+router.get("/getProduct", productController.getAllProducts);
 router.get("/:id", productController.getProductById);
-router.put("/:id", authMiddleware, productController.updateProduct);
+router.post("/:id",upload, productController.updateProduct);
 router.delete("/:id", authMiddleware, productController.deleteProduct);
 
 module.exports = router;

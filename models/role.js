@@ -3,10 +3,6 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -20,8 +16,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ["user", "admin"], // Only allow 'user' or 'admin'
+      default: "user", // Default role is 'user'
     },
   },
   { timestamps: true }

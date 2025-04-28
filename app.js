@@ -14,8 +14,8 @@ const app = express();
 
 // CORS Configuration
 const corsOptions = {
-  origin: "http://localhost:4200", // Allow requests from your frontend
-  credentials: true, // Allow cookies/auth headers if needed
+  origin: "*",  // ✅ Allow all origins
+  credentials: true,
 };
 
 app.use(cors(corsOptions));

@@ -9,12 +9,13 @@ const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const collageRoutes = require("./routes/collageRoute");
+const cartRoutes = require("./routes/cartRoutes");
 
 const app = express();
 
 // CORS Configuration
 const corsOptions = {
-  origin: "*",  // ✅ Allow all origins
+  origin: "*", // ✅ Allow all origins
   credentials: true,
 };
 
@@ -31,6 +32,7 @@ app.use(bodyParser.json());
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/collage", collageRoutes);
+app.use("/api/cart");
 
 // Basic Home Route
 app.get("/", (req, res) => {

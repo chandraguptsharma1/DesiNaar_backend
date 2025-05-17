@@ -66,3 +66,42 @@ exports.getCartItems = async (req, res) => {
     });
   }
 };
+
+exports.delete = async (req, res) => {
+  try {
+    const { productID } = req.body;
+
+    const userID = req.user.id;
+
+    if (!productID) {
+      return res.status(400).json({
+        status: 400,
+        msg: "Product ID is required for deletion",
+        data: null,
+      });
+    }
+
+    const deleteItem = await Cart.findOneAndDelete({ userID, productID });
+
+    if (!deleteItem) {
+      return res.status(404).json({
+        status: 404,
+        msg: "Item not found in cart",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      msg: "Item removed from cart",
+      data: deletedItem,
+    });
+  } catch (error) {
+    console.error("Delete Cart Item Error:", error);
+    res.status(500).json({
+      status: 500,
+      msg: "Internal server error",
+      data: null,
+    });
+  }
+};

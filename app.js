@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/collage", collageRoutes);
-app.use("/api/cart");
+app.use("/api/cart", cartRoutes);
 
 // Basic Home Route
 app.get("/", (req, res) => {

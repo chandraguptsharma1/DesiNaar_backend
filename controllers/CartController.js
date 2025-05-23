@@ -2,8 +2,7 @@ const Cart = require("../models/Cart");
 
 exports.addtoCards = async (req, res) => {
   try {
-    const { productID } = req.body;
-    const userID = req.user.id;
+    const { productID } = req.params;
 
     if (!productID) {
       return res.status(400).json({
@@ -13,7 +12,7 @@ exports.addtoCards = async (req, res) => {
       });
     }
 
-    let existingItem = await Cart.findOne({ userID, productID });
+    let existingItem = await Cart.findOne({ productID });
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -27,7 +26,6 @@ exports.addtoCards = async (req, res) => {
 
     const cartItem = new Cart({
       productID,
-      userID,
       quantity: 1,
     });
 
@@ -39,9 +37,11 @@ exports.addtoCards = async (req, res) => {
     });
   } catch (err) {
     console.error("Add to Cart Error:", err);
-    res
-      .status(500)
-      .json({ status: 500, message: "Internal server error", data: null });
+    res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+      data: null,
+    });
   }
 };
 

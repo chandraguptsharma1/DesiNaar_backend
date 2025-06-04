@@ -30,6 +30,15 @@ const ProductSchema = new mongoose.Schema({
     internationalTime: { type: String, default: undefined },
     returnPolicy: { type: String, default: undefined },
   },
+
+  collectionType: {
+    type: String,
+    required: false, // true if mandatory
+  },
+  sequenceNo: {
+    type: Number,
+    required: false,
+  },
 });
 
 module.exports = mongoose.model("Product", ProductSchema);

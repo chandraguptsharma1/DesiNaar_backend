@@ -6,7 +6,15 @@ require("dotenv").config();
 
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, mobile } = req.body;
+    const { firstName, lastName, email, password } = req.body;
+
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({
+        status: 400,
+        message: "All fields are required.",
+        data: null,
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -22,13 +30,15 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create user full name
+    const fullName = `${firstName} ${lastName}`;
+
     // Create a new user
     const user = new User({
-      name,
+      name: fullName,
       email,
       password: hashedPassword,
-      role: "user",
-      mobile: mobile,
+      role: "admin",
     });
 
     await user.save();
@@ -40,7 +50,6 @@ exports.registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        mobile: user.mobile,
         role: user.role,
       },
     });

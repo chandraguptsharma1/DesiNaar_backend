@@ -11,8 +11,17 @@ const uploadProduct = async (req, res) => {
   try {
     console.log("Uploading product:", req.body);
 
-    const { title, sku, price, sizes, colors, fabricCare, deliveryAndReturns } =
-      req.body;
+    const {
+      title,
+      sku,
+      price,
+      sizes,
+      colors,
+      fabricCare,
+      deliveryAndReturns,
+      collectionType,
+      sequenceNo,
+    } = req.body;
 
     const images = req.files;
 
@@ -26,6 +35,8 @@ const uploadProduct = async (req, res) => {
       deliveryAndReturns: deliveryAndReturns
         ? JSON.parse(deliveryAndReturns)
         : {},
+      collectionType: collectionType?.trim() || "general", // default if needed
+      sequenceNo: sequenceNo ? parseInt(sequenceNo) : 0, // or default to 0
     };
 
     // Check required fields
@@ -94,7 +105,20 @@ const uploadProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    let { collectionType } = req.query;
+
+    console.log("Raw collectionType:", collectionType);
+
+    // 🔹 Clean the value
+    collectionType = collectionType?.replace(/"/g, '').trim();
+
+    // 🔹 If cleaned collectionType is still valid, apply filter
+    const filter = collectionType ? { collectionType: new RegExp(`^${collectionType}$`, "i") } : {};
+
+    console.log("Applied filter:", filter);
+
+    const products = await Product.find(filter).sort({ sequenceNo: 1 });
+
     return res.status(200).json({
       status: "success",
       statusCode: 200,
@@ -110,6 +134,8 @@ const getAllProducts = async (req, res) => {
     });
   }
 };
+
+
 
 const getProductById = async (req, res) => {
   try {
@@ -186,6 +212,8 @@ const updateProduct = async (req, res) => {
       updates.shippingInfo = JSON.parse(updates.shippingInfo);
     if (updates.specifications)
       updates.specifications = JSON.parse(updates.specifications);
+    if (updates.sequenceNo) updates.sequenceNo = parseInt(updates.sequenceNo);
+    if (updates.collectionType) updates.collectionType = updates.collectionType.trim();
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
       new: true,

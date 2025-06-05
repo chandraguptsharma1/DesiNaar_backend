@@ -109,22 +109,45 @@ const getAllProducts = async (req, res) => {
 
     console.log("Raw collectionType:", collectionType);
 
-    // 🔹 Clean the value
     collectionType = collectionType?.replace(/"/g, '').trim();
 
-    // 🔹 If cleaned collectionType is still valid, apply filter
-    const filter = collectionType ? { collectionType: new RegExp(`^${collectionType}$`, "i") } : {};
+    let products;
 
-    console.log("Applied filter:", filter);
+    if (collectionType) {
+      // Filter by specific collectionType
+      const filter = { collectionType: new RegExp(`^${collectionType}$`, "i") };
+      console.log("Applied filter:", filter);
 
-    const products = await Product.find(filter).sort({ sequenceNo: 1 });
+      products = await Product.find(filter).sort({ sequenceNo: 1 });
 
-    return res.status(200).json({
-      status: "success",
-      statusCode: 200,
-      message: "Products retrieved successfully",
-      data: products,
-    });
+      return res.status(200).json({
+        status: "success",
+        statusCode: 200,
+        message: "Products retrieved successfully",
+        data: {
+          [collectionType]: products
+        },
+      });
+    } else {
+      // No filter — get all products
+      products = await Product.find({}).sort({ sequenceNo: 1 });
+
+      // Group by collectionType
+      const grouped = {};
+      for (const product of products) {
+        const type = product.collectionType || 'Unknown';
+        if (!grouped[type]) grouped[type] = [];
+        grouped[type].push(product);
+      }
+
+      return res.status(200).json({
+        status: "success",
+        statusCode: 200,
+        message: "All grouped products retrieved successfully",
+        data: grouped,
+      });
+    }
+
   } catch (err) {
     return res.status(500).json({
       status: "error",
@@ -134,6 +157,7 @@ const getAllProducts = async (req, res) => {
     });
   }
 };
+
 
 
 

@@ -51,9 +51,7 @@ const uploadProduct = async (req, res) => {
     // 🔹 Upload images to Supabase
     if (images && images.length > 0) {
       for (const image of images) {
-        const fileName = `${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}.jpg`;
+        const fileName = image.originalname;
         const folderName = "desinaar/productImage";
         const filePath = `${folderName}/${fileName}`;
 
@@ -62,7 +60,7 @@ const uploadProduct = async (req, res) => {
           .upload(filePath, image.buffer, {
             contentType: image.mimetype,
             cacheControl: "3600",
-            upsert: false,
+            upsert: true,
           });
 
         if (uploadError) {
@@ -178,7 +176,7 @@ const updateProduct = async (req, res) => {
     let imageUrls = [];
 
     for (const image of images) {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const fileName = image.originalname;
       const folderName = "desinaar/productImage";
       const filePath = `${folderName}/${fileName}`;
 
@@ -187,7 +185,7 @@ const updateProduct = async (req, res) => {
         .upload(filePath, image.buffer, {
           contentType: image.mimetype,
           cacheControl: "3600",
-          upsert: false,
+          upsert: true,
         });
 
       if (uploadError) {
@@ -206,8 +204,7 @@ const updateProduct = async (req, res) => {
     let detailImageUrls = [];
 
     for (const image of detailImages) {
-      console.log("Processing detail image:", image);
-      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const fileName = image.originalname;
       const folderName = "desinaar/detailImages";
       const filePath = `${folderName}/${fileName}`;
 
@@ -216,7 +213,7 @@ const updateProduct = async (req, res) => {
         .upload(filePath, image.buffer, {
           contentType: image.mimetype,
           cacheControl: "3600",
-          upsert: false,
+          upsert: true,
         });
 
       if (uploadError) {

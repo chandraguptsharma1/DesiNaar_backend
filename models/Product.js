@@ -4,9 +4,11 @@ const ProductSchema = new mongoose.Schema({
   imageUrls: [String], // ✅ Retain only this field
   // Other fields are optional / can be removed:
   title: { type: String, default: undefined },
+  description: { type: String, default: undefined },
   sku: { type: String, default: undefined },
   price: { type: Number, default: undefined },
-
+  videoUrl: { type: String, default: undefined },
+  detailImages: { type: [String], default: [] },
   sizes: { type: [String], default: [] },
   colors: { type: [String], default: [] },
 

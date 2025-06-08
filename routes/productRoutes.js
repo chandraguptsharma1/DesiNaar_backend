@@ -8,7 +8,10 @@ const multer = require("multer");
 
 // 🔹 Configure Multer for multiple file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ storage }).array("images", 8); // ✅ Correct usage
+const upload = multer({ storage }).fields([
+  { name: "images", maxCount: 8 },
+  { name: "detailImages", maxCount: 8 },
+]); // ✅ Correct usage
 
 // 🔹 Route for product upload with multiple images
 router.post("/upload", upload, productController.uploadProduct);

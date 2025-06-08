@@ -107,7 +107,7 @@ const getAllProducts = async (req, res) => {
   try {
     let { collectionType } = req.query;
 
-    collectionType = collectionType?.replace(/"/g, '').trim();
+    collectionType = collectionType?.replace(/"/g, "").trim();
 
     let products;
 
@@ -116,7 +116,10 @@ const getAllProducts = async (req, res) => {
       products = await Product.find(filter).sort({ sequenceNo: 1 });
     } else {
       // Get all products and sort by collectionType first, then sequenceNo
-      products = await Product.find({}).sort({ collectionType: 1, sequenceNo: 1 });
+      products = await Product.find({}).sort({
+        collectionType: 1,
+        sequenceNo: 1,
+      });
     }
 
     return res.status(200).json({
@@ -125,7 +128,6 @@ const getAllProducts = async (req, res) => {
       message: "Products retrieved successfully",
       data: products,
     });
-
   } catch (err) {
     return res.status(500).json({
       status: "error",
@@ -135,10 +137,6 @@ const getAllProducts = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 const getProductById = async (req, res) => {
   try {
@@ -172,42 +170,81 @@ const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    
+    console.log("Request Files:", req.files);
+    console.log("Detail Images from request:", req.files?.detailImages);
+   
+    const images = req.files?.images || [];
     let imageUrls = [];
 
-    const images = req.files;
+    for (const image of images) {
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const folderName = "desinaar/productImage";
+      const filePath = `${folderName}/${fileName}`;
 
-    // If new images are uploaded
-    if (images && images.length > 0) {
-      for (const image of images) {
-        const fileName = `${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}.jpg`;
-        const folderName = "desinaar/productImage";
-        const filePath = `${folderName}/${fileName}`;
+      const { data, error: uploadError } = await supabase.storage
+        .from("3gContent")
+        .upload(filePath, image.buffer, {
+          contentType: image.mimetype,
+          cacheControl: "3600",
+          upsert: false,
+        });
 
-        const { data, error: uploadError } = await supabase.storage
-          .from("3gContent")
-          .upload(filePath, image.buffer, {
-            contentType: image.mimetype,
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (uploadError) {
-          throw new Error(`Supabase upload error: ${uploadError.message}`);
-        }
-
-        const SUPABASE_URL =
-          "https://ewppyeqhqylgauppwvjd.supabase.co/storage/v1/object/public";
-        const bucketName = "3gContent";
-        const publicUrl = `${SUPABASE_URL}/${bucketName}/${data.path}`;
-        imageUrls.push(publicUrl);
+      if (uploadError) {
+        throw new Error(`Supabase upload error: ${uploadError.message}`);
       }
 
-      updates.imageUrls = imageUrls; // ✅ Add new imageUrls to the update
+      const publicUrl = `https://ewppyeqhqylgauppwvjd.supabase.co/storage/v1/object/public/3gContent/${data.path}`;
+      imageUrls.push(publicUrl);
+    }
+
+    if (imageUrls.length > 0) updates.imageUrls = imageUrls;
+
+    // ---------- Handle detail images ----------
+    const detailImages = req.files?.detailImages || [];
+    console.log("Detail Images array:", detailImages);
+    let detailImageUrls = [];
+
+    for (const image of detailImages) {
+      console.log("Processing detail image:", image);
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const folderName = "desinaar/detailImages";
+      const filePath = `${folderName}/${fileName}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from("3gContent")
+        .upload(filePath, image.buffer, {
+          contentType: image.mimetype,
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Supabase upload error: ${uploadError.message}`);
+      }
+
+      const publicUrl = `https://ewppyeqhqylgauppwvjd.supabase.co/storage/v1/object/public/3gContent/${data.path}`;
+      detailImageUrls.push(publicUrl);
+      console.log("Detail image uploaded:", publicUrl);
+    }
+
+    console.log("Final detailImageUrls:", detailImageUrls);
+    
+    if (detailImageUrls.length > 0) {
+      updates.detailImages = detailImageUrls;
+      console.log("Setting detailImages in updates:", updates.detailImages);
+    } else if (updates.detailImages) {
+      updates.detailImages = JSON.parse(updates.detailImages);
+      console.log("Parsed existing detailImages:", updates.detailImages);
     }
 
     // Optional: Parse any fields like sizes, additionalInfo etc.
+    if (updates.description && typeof updates.description !== "string") {
+      updates.description = JSON.stringify(updates.description);
+    }
+    if (updates.videoUrl) {
+      updates.videoUrl = updates.videoUrl.trim();
+    }
     if (updates.sizes) updates.sizes = JSON.parse(updates.sizes);
     if (updates.additionalInfo)
       updates.additionalInfo = JSON.parse(updates.additionalInfo);
@@ -216,7 +253,9 @@ const updateProduct = async (req, res) => {
     if (updates.specifications)
       updates.specifications = JSON.parse(updates.specifications);
     if (updates.sequenceNo) updates.sequenceNo = parseInt(updates.sequenceNo);
-    if (updates.collectionType) updates.collectionType = updates.collectionType.trim();
+    if (updates.collectionType)
+      updates.collectionType = updates.collectionType.trim();
+    if (updates.price) updates.price = parseFloat(updates.price);
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
       new: true,

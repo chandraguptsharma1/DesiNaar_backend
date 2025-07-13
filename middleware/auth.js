@@ -11,7 +11,7 @@ module.exports = function (req, res, next) {
   const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, "desinaar");
     req.user = decoded;  // Store user data from token
     next();
   } catch (err) {

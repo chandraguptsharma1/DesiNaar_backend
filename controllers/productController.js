@@ -28,7 +28,10 @@ const uploadProduct = async (req, res) => {
     const productData = {
       title: title?.trim(),
       sku: sku?.trim(),
-      price: price ? parseFloat(price.trim()) : undefined,
+      price:
+        price !== undefined && price !== null
+          ? parseFloat(typeof price === "string" ? price.trim() : price)
+          : undefined,
       sizes: sizes ? JSON.parse(sizes) : [],
       colors: colors ? JSON.parse(colors) : [],
       fabricCare: fabricCare ? JSON.parse(fabricCare) : {},
@@ -168,10 +171,10 @@ const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    
+
     console.log("Request Files:", req.files);
     console.log("Detail Images from request:", req.files?.detailImages);
-   
+
     const images = req.files?.images || [];
     let imageUrls = [];
 
@@ -226,7 +229,7 @@ const updateProduct = async (req, res) => {
     }
 
     console.log("Final detailImageUrls:", detailImageUrls);
-    
+
     if (detailImageUrls.length > 0) {
       updates.detailImages = detailImageUrls;
       console.log("Setting detailImages in updates:", updates.detailImages);
@@ -235,24 +238,27 @@ const updateProduct = async (req, res) => {
       console.log("Parsed existing detailImages:", updates.detailImages);
     }
 
-    // Optional: Parse any fields like sizes, additionalInfo etc.
-    if (updates.description && typeof updates.description !== "string") {
-      updates.description = JSON.stringify(updates.description);
-    }
-    if (updates.videoUrl) {
-      updates.videoUrl = updates.videoUrl.trim();
-    }
-    if (updates.sizes) updates.sizes = JSON.parse(updates.sizes);
-    if (updates.additionalInfo)
-      updates.additionalInfo = JSON.parse(updates.additionalInfo);
-    if (updates.shippingInfo)
-      updates.shippingInfo = JSON.parse(updates.shippingInfo);
-    if (updates.specifications)
-      updates.specifications = JSON.parse(updates.specifications);
+    const parseIfString = (field) =>
+      typeof field === "string" ? JSON.parse(field) : field;
+
+    // Convert fields safely
+    updates.fabricCare = parseIfString(updates.fabricCare);
+    updates.deliveryAndReturns = parseIfString(updates.deliveryAndReturns);
+    updates.additionalInfo = parseIfString(updates.additionalInfo);
+    updates.shippingInfo = parseIfString(updates.shippingInfo);
+    updates.specifications = parseIfString(updates.specifications);
+    updates.sizes = parseIfString(updates.sizes);
+    updates.colors = parseIfString(updates.colors);
+
     if (updates.sequenceNo) updates.sequenceNo = parseInt(updates.sequenceNo);
-    if (updates.collectionType)
-      updates.collectionType = updates.collectionType.trim();
     if (updates.price) updates.price = parseFloat(updates.price);
+
+    // Trim string fields
+    ["title", "description", "sku", "videoUrl", "collectionType"].forEach((key) => {
+      if (updates[key] && typeof updates[key] === "string") {
+        updates[key] = updates[key].trim();
+      }
+    });
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
       new: true,
